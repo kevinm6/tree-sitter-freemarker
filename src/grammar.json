@@ -1,4 +1,5 @@
 {
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "freemarker",
   "rules": {
     "source_file": {
@@ -26,8 +27,11 @@
       ]
     },
     "comment": {
-      "type": "PATTERN",
-      "value": "(\\<\\#\\-\\-).+(\\-\\-\\>)"
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "<#--.*?->"
+      }
     },
     "interpolation": {
       "type": "SEQ",
@@ -187,50 +191,40 @@
       ]
     },
     "as_expression": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "PREC_RIGHT",
-          "value": 1,
-          "content": {
-            "type": "SEQ",
-            "members": [
-              {
-                "type": "REPEAT",
-                "content": {
-                  "type": "PREC",
-                  "value": 2,
-                  "content": {
-                    "type": "SYMBOL",
-                    "name": "type"
-                  }
-                }
-              },
-              {
-                "type": "ALIAS",
-                "content": {
-                  "type": "SEQ",
-                  "members": [
-                    {
-                      "type": "STRING",
-                      "value": "as"
-                    }
-                  ]
-                },
-                "named": true,
-                "value": "as"
-              },
-              {
-                "type": "REPEAT1",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "type"
-                }
+      "type": "PREC_RIGHT",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "SYMBOL",
+                "name": "type"
               }
-            ]
+            }
+          },
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "STRING",
+              "value": "as"
+            },
+            "named": true,
+            "value": "as"
+          },
+          {
+            "type": "REPEAT1",
+            "content": {
+              "type": "SYMBOL",
+              "name": "type"
+            }
           }
-        }
-      ]
+        ]
+      }
     },
     "expression": {
       "type": "CHOICE",
@@ -917,13 +911,8 @@
           ]
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#list>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#list>"
         }
       ]
     },
@@ -974,22 +963,12 @@
       ]
     },
     "break": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#break>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#break>"
     },
     "continue": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#continue>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#continue>"
     },
     "list_else": {
       "type": "SEQ",
@@ -1035,13 +1014,8 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#items>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#items>"
         }
       ]
     },
@@ -1118,13 +1092,8 @@
           ]
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#if>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#if>"
         }
       ]
     },
@@ -1230,13 +1199,8 @@
           ]
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#switch>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#switch>"
         }
       ]
     },
@@ -1297,13 +1261,8 @@
       ]
     },
     "switch_middle": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SYMBOL",
-          "name": "case"
-        }
-      ]
+      "type": "SYMBOL",
+      "name": "case"
     },
     "function": {
       "type": "SEQ",
@@ -1340,13 +1299,8 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#function>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#function>"
         }
       ]
     },
@@ -1432,13 +1386,8 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#macro>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#macro>"
         }
       ]
     },
@@ -1492,13 +1441,8 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "<#attempt>"
-            }
-          ]
+          "type": "STRING",
+          "value": "<#attempt>"
         },
         {
           "type": "REPEAT",
@@ -1508,13 +1452,8 @@
           }
         },
         {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "</#attempt>"
-            }
-          ]
+          "type": "STRING",
+          "value": "</#attempt>"
         }
       ]
     },
@@ -1532,36 +1471,16 @@
       ]
     },
     "recover": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "<#recover>"
-            }
-          ]
-        }
-      ]
+      "type": "STRING",
+      "value": "<#recover>"
     },
     "fallback": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#fallback>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#fallback>"
     },
     "flush": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#flush>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#flush>"
     },
     "ftl": {
       "type": "SEQ",
@@ -1651,22 +1570,12 @@
       ]
     },
     "lt": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#lt>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#lt>"
     },
     "nt": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#nt>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#nt>"
     },
     "recurse": {
       "type": "SEQ",
@@ -1698,13 +1607,8 @@
       ]
     },
     "rt": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#rt>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#rt>"
     },
     "setting": {
       "type": "SEQ",
@@ -1736,22 +1640,12 @@
       ]
     },
     "stop": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#stop>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#stop>"
     },
     "t": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "<#t>"
-        }
-      ]
+      "type": "STRING",
+      "value": "<#t>"
     },
     "visit": {
       "type": "SEQ",
@@ -1816,13 +1710,8 @@
       ]
     },
     "end_assign": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "</#assign>"
-        }
-      ]
+      "type": "STRING",
+      "value": "</#assign>"
     },
     "global": {
       "type": "CHOICE",
@@ -1858,13 +1747,8 @@
       ]
     },
     "end_global": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "</#global>"
-        }
-      ]
+      "type": "STRING",
+      "value": "</#global>"
     },
     "local": {
       "type": "CHOICE",
@@ -1900,13 +1784,8 @@
       ]
     },
     "end_local": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "</#local>"
-        }
-      ]
+      "type": "STRING",
+      "value": "</#local>"
     }
   },
   "extras": [
@@ -1916,6 +1795,9 @@
     }
   ],
   "conflicts": [],
+  "precedences": [],
   "externals": [],
-  "inline": []
+  "inline": [],
+  "supertypes": [],
+  "reserved": {}
 }
