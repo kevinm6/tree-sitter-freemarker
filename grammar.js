@@ -22,12 +22,7 @@ module.exports = grammar({
         $.interpolation,
       ),
 
-    comment: ($) => 
-      token(seq(
-        "<#--",
-        repeat(/[^-]|-[^-]/),
-        "-->"
-      )),
+    comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")),
 
     interpolation: ($) =>
       seq(
@@ -67,6 +62,7 @@ module.exports = grammar({
         $.t,
         $.user_defined,
         $.visit,
+        $.escape,
       ),
 
     parameter_group: ($) => choice($.as_expression, $.expression, $.built_in),
@@ -229,32 +225,6 @@ module.exports = grammar({
 
     /********** USER DEFINED DIRECTIVES ***********/
 
-    //OLD
-    //user_defined: ($) =>
-    //  seq(
-    //    prec.left(
-    //      1,
-    //      choice(
-    //        seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
-    //    ),
-    //  ),
-
-    //user_defined: ($) =>
-    //  prec.left(
-    //    1,
-    //    choice(
-    //      seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
-    //      seq(
-    //        "<",
-    //        token(/\w+/),
-    //        repeat($.parameter_group),
-    //        choice(">", "/>"),
-    //        repeat($.directive),
-    //        optional($.closing_tag)
-    //      ),
-    //    )
-    //  ),
-
     user_defined: ($) =>
       prec.left(
         1,
@@ -264,16 +234,12 @@ module.exports = grammar({
             "<",
             token(/\w+/),
             repeat($.parameter_group),
-            choice(
-              "/>",
-              seq(">", repeat($._definition), $.closing_tag)
-            )
-          )
-        )
+            choice("/>", seq(">", repeat($._definition), $.closing_tag)),
+          ),
+        ),
       ),
 
-    closing_tag: ($) =>
-      seq("</", token(/\w+/), ">"),
+    closing_tag: ($) => seq("</", token(/\w+/), ">"),
 
     /********** END USER DEFINED DIRECTIVES ***********/
 
@@ -406,6 +372,13 @@ module.exports = grammar({
     flush: ($) => "<#flush>",
 
     ftl: ($) => seq(prec.left(1, seq("<#ftl", repeat($.parameter_group), ">"))),
+
+    escape: ($) =>
+      seq(
+        prec.left(1, seq("<#escape", repeat($.parameter_group), ">")),
+        repeat($._definition), // allow nested content
+        "</#escape>",
+      ),
 
     import: ($) =>
       seq(prec.left(1, seq("<#import", repeat($.parameter_group), ">"))),
