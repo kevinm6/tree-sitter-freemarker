@@ -10,6 +10,7 @@
 ((function) @indent.begin)
 ((attempt) @indent.begin)
 ((recover) @indent.begin)
+((user_defined) @indent.begin)
 
 ;; Decrease indent at the end of a block
 ((if) @indent.end)
@@ -18,6 +19,7 @@
 ((macro) @indent.end)
 ((function) @indent.end)
 ((attempt) @indent.end)
+((closing_tag) @indent.end)
 
 ;; No indent change for inline/single-line directives
 ((assign) @indent.ignore)
