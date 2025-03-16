@@ -157,7 +157,28 @@ module.exports = grammar({
       ),
 
     //DIRECT Values
+    /*
     string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
+    */
+    // testing interpolation
+    string: ($) =>
+  choice(
+    token(/\"(\\.|[^\"])*\"/),  // Regular double-quoted string
+    token(/\'(\\.|[^\'])*\'/),  // Regular single-quoted string
+    $.interpolated_string       // Support for string interpolation
+  ),
+
+interpolated_string: ($) =>
+  seq(
+    '"',   // Start of string
+    repeat(choice(
+      /[^"${}\\]+/, // Normal string content
+      $.interpolation, // Embedded FreeMarker expressions
+      /\\./, // Escaped characters
+      "$" // Literal dollar signs
+    )),
+    '"',   // End of string
+  ),
 
     number: ($) => /[0-9]/,
 
