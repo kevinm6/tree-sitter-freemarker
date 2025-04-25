@@ -1,7 +1,7 @@
 ;; Foldable block directives
 (if) @fold
 (elseif) @fold
-(else) @fold
+;;(else) @fold
 (switch) @fold
 (case) @fold
 (default) @fold
@@ -14,3 +14,7 @@
 (assign) @fold
 (global) @fold
 (local) @fold
+
+((assign) @fold (#has-ancestor? closing_tag))
+((global) @fold (#has-ancestor? closing_tag))
+((local) @fold (#has-ancestor? closing_tag))
