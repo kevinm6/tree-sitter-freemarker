@@ -18,25 +18,26 @@ module.exports = grammar({
       choice(
         $.comment,
         $.directive,
-        //$.html,
+        $.cdata,
         $.interpolation,
+        // $.user_defined,
+        //$.html,
       ),
 
-    comment: ($) => token(/<#--.*?->/),
-    // comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")),
+    comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")), // multi-line comments
 
     interpolation: ($) =>
-      seq(
-        prec.left(
-          1,
+      // seq(
+      //   prec.left(
+          // 1,
           seq(
             "$",
             alias("{", $.bracket),
             repeat($.expression),
             alias("}", $.bracket),
           ),
-        ),
-      ),
+      //   ),
+      // ),
 
     directive: ($) =>
       choice(
@@ -85,6 +86,7 @@ module.exports = grammar({
           ),
         ),
         prec.left(1, seq($.operator, repeat($.type))),
+        $.interpolation
       ),
 
     type: ($) =>
@@ -135,7 +137,7 @@ module.exports = grammar({
         "-",
         "%",
 
-        //COPARISON OPERATIONS
+        //COMPARISON OPERATIONS
         "==",
         "!=",
         "<",
@@ -158,14 +160,11 @@ module.exports = grammar({
       ),
 
     //DIRECT Values
-    /*
-    string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
-    */
-    // testing interpolation
+    // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
     string: ($) =>
       choice(
-        token(/\"(\\.|[^\"])*\"/),  // Regular double-quoted string
-        token(/\'(\\.|[^\'])*\'/),  // Regular single-quoted string
+        token(/\"(\\.|[^"])*"/),  // Regular double-quoted string
+        token(/\'(\\.|[^'])*'/),  // Regular single-quoted string
         $.interpolated_string       // Support for string interpolation
       ),
 
@@ -174,7 +173,7 @@ module.exports = grammar({
         seq(
           '"',   // Start of string
           repeat(choice(
-            /[^"${}\\]+/, // Normal string content
+            /[^"\\${}\\]+/, // Normal string content, allowing HL7 chars
             $.interpolation, // Embedded FreeMarker expressions
             /\\./, // Escaped characters
             "$" // Literal dollar signs
@@ -184,7 +183,7 @@ module.exports = grammar({
         seq(
           "'",   // Start of string
           repeat(choice(
-            /[^'${}\\]+/, // Normal string content
+            /[^'\\${}\\]+/, // Normal string content
             $.interpolation, // Embedded FreeMarker expressions
             /\\./, // Escaped characters
             "$" // Literal dollar signs
@@ -206,6 +205,32 @@ module.exports = grammar({
 
     hash: ($) =>
       seq(alias("{", $.bracket), repeat($.expression), alias("}", $.bracket)),
+
+    // special_character: $ => token(/[\^~\\|]/),
+
+    cdata: ($) => seq(
+      "<![CDATA[",
+      /[^<]+/,
+      "]]>"
+    ),
+
+    // cdata: ($) => seq(
+    //   "<![CDATA[",
+    //   choice(
+    //     /[^]]*/,
+    //   ),
+    // "]]>"
+    // ),
+    // cdata_as_xml: ($) => seq(
+    //   "<![CDATA[",
+    //   choice(
+    //     /[^]]*/,
+    //     $.xml,
+    //   ),
+    // "]]>"
+    // ),
+
+    xml: ($) => token(prec(1, /<[^>]+>/)),
 
     //RETRIEVE Values
     top_level: ($) =>
@@ -257,8 +282,8 @@ module.exports = grammar({
     //   $.group
     // ),
 
-    /********** USER DEFINED DIRECTIVES ***********/
 
+    /********** USER DEFINED DIRECTIVES ***********/
     user_defined: ($) =>
       prec.left(
         1,
@@ -266,9 +291,10 @@ module.exports = grammar({
           seq("<@", token(/\w+(\.\w+)?/), repeat($.parameter_group), choice(">", "/>")),
           seq(
             "<",
-            token(/\w+(\.\w+)?/),
+            token(/\w+(\.\w+)?/) /*$.cdata)*/,
             repeat($.parameter_group),
             choice("/>", seq(">", repeat($._definition), $.closing_tag)),
+            // token($.cdata)
           ),
         ),
       ),

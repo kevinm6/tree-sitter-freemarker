@@ -119,6 +119,11 @@
     }
   },
   {
+    "type": "cdata",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "closing_tag",
     "named": true,
     "fields": {}
@@ -269,6 +274,10 @@
       "required": false,
       "types": [
         {
+          "type": "cdata",
+          "named": true
+        },
+        {
           "type": "comment",
           "named": true
         },
@@ -295,6 +304,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "interpolation",
+          "named": true
+        },
         {
           "type": "operator",
           "named": true
@@ -850,6 +863,10 @@
       "required": false,
       "types": [
         {
+          "type": "cdata",
+          "named": true
+        },
+        {
           "type": "comment",
           "named": true
         },
@@ -998,6 +1015,10 @@
       "required": false,
       "types": [
         {
+          "type": "cdata",
+          "named": true
+        },
+        {
           "type": "closing_tag",
           "named": true
         },
@@ -1109,6 +1130,10 @@
   },
   {
     "type": "<",
+    "named": false
+  },
+  {
+    "type": "<![CDATA[",
     "named": false
   },
   {
@@ -1276,6 +1301,10 @@
     "named": false
   },
   {
+    "type": "]]>",
+    "named": false
+  },
+  {
     "type": "as",
     "named": true
   },
@@ -1389,11 +1418,11 @@
   },
   {
     "type": "lt",
-    "named": true
+    "named": false
   },
   {
     "type": "lt",
-    "named": false
+    "named": true
   },
   {
     "type": "lte",

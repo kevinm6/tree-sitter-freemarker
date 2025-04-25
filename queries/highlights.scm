@@ -29,6 +29,7 @@
 (break) @keyword
 (continue) @keyword
 (sep) @keyword
+(cdata) @string.special
 
 ; === Expressions ===
 (expression) @variable
@@ -51,7 +52,7 @@
 (operator ["*" "+" "-" "/" "%"]) @operator.arithmetic
 
 ; === Interpolations ===
-(interpolation) @string.special
+(interpolation) @variable
 (bracket) @punctuation.bracket
 
 ; === Variables and Built-ins ===

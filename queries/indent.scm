@@ -23,6 +23,7 @@
 ((macro) @indent.end)
 ((function) @indent.end)
 ((attempt) @indent.end)
+((user_defined) @indent.end)
 ((escape) @indent.end)
 
 ;; No indent change for inline/single-line directives
