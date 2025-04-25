@@ -29,8 +29,24 @@
     "comment": {
       "type": "TOKEN",
       "content": {
-        "type": "PATTERN",
-        "value": "<#--.*?->"
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "<#--"
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "PATTERN",
+              "value": "[^-]|-[^-]"
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "-->"
+          }
+        ]
       }
     },
     "interpolation": {
@@ -479,6 +495,14 @@
         },
         {
           "type": "STRING",
+          "value": "eq"
+        },
+        {
+          "type": "STRING",
+          "value": "neq"
+        },
+        {
+          "type": "STRING",
           "value": "!"
         },
         {
@@ -811,12 +835,12 @@
       ]
     },
     "user_defined": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "PREC_LEFT",
-          "value": 1,
-          "content": {
+      "type": "PREC_LEFT",
+      "value": 1,
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
             "type": "SEQ",
             "members": [
               {
@@ -851,7 +875,79 @@
                 ]
               }
             ]
+          },
+          {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "<"
+              },
+              {
+                "type": "TOKEN",
+                "content": {
+                  "type": "PATTERN",
+                  "value": "\\w+"
+                }
+              },
+              {
+                "type": "REPEAT",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "parameter_group"
+                }
+              },
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "/>"
+                  },
+                  {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": ">"
+                      },
+                      {
+                        "type": "REPEAT",
+                        "content": {
+                          "type": "SYMBOL",
+                          "name": "_definition"
+                        }
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "closing_tag"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
+        ]
+      }
+    },
+    "closing_tag": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "</"
+        },
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "\\w+"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ">"
         }
       ]
     },

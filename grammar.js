@@ -22,8 +22,12 @@ module.exports = grammar({
         $.interpolation,
       ),
 
-    //comment: ($) => /(\<\#\-\-).+(\-\-\>)/,
-    comment: ($) => token(/<#--.*?->/),
+    comment: ($) => 
+      token(seq(
+        "<#--",
+        repeat(/[^-]|-[^-]/),
+        "-->"
+      )),
 
     interpolation: ($) =>
       seq(
@@ -143,6 +147,8 @@ module.exports = grammar({
         "lte",
         "gt",
         "gte",
+        "eq",
+        "neq",
 
         //LOGICAL OPERATIONS
         "!",
@@ -223,13 +229,51 @@ module.exports = grammar({
 
     /********** USER DEFINED DIRECTIVES ***********/
 
+    //OLD
+    //user_defined: ($) =>
+    //  seq(
+    //    prec.left(
+    //      1,
+    //      choice(
+    //        seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
+    //    ),
+    //  ),
+
+    //user_defined: ($) =>
+    //  prec.left(
+    //    1,
+    //    choice(
+    //      seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
+    //      seq(
+    //        "<",
+    //        token(/\w+/),
+    //        repeat($.parameter_group),
+    //        choice(">", "/>"),
+    //        repeat($.directive),
+    //        optional($.closing_tag)
+    //      ),
+    //    )
+    //  ),
+
     user_defined: ($) =>
-      seq(
-        prec.left(
-          1,
+      prec.left(
+        1,
+        choice(
           seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
-        ),
+          seq(
+            "<",
+            token(/\w+/),
+            repeat($.parameter_group),
+            choice(
+              "/>",
+              seq(">", repeat($._definition), $.closing_tag)
+            )
+          )
+        )
       ),
+
+    closing_tag: ($) =>
+      seq("</", token(/\w+/), ">"),
 
     /********** END USER DEFINED DIRECTIVES ***********/
 

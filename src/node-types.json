@@ -119,6 +119,11 @@
     }
   },
   {
+    "type": "closing_tag",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "default",
     "named": true,
     "fields": {},
@@ -937,6 +942,22 @@
       "required": false,
       "types": [
         {
+          "type": "closing_tag",
+          "named": true
+        },
+        {
+          "type": "comment",
+          "named": true
+        },
+        {
+          "type": "directive",
+          "named": true
+        },
+        {
+          "type": "interpolation",
+          "named": true
+        },
+        {
           "type": "parameter_group",
           "named": true
         }
@@ -1119,6 +1140,10 @@
     "named": false
   },
   {
+    "type": "</",
+    "named": false
+  },
+  {
     "type": "</#attempt>",
     "named": false
   },
@@ -1227,6 +1252,10 @@
     "named": true
   },
   {
+    "type": "eq",
+    "named": false
+  },
+  {
     "type": "error",
     "named": false
   },
@@ -1308,6 +1337,10 @@
   },
   {
     "type": "namespace",
+    "named": false
+  },
+  {
+    "type": "neq",
     "named": false
   },
   {
