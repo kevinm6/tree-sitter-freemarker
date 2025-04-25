@@ -22,7 +22,8 @@ module.exports = grammar({
         $.interpolation,
       ),
 
-    comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")),
+    comment: ($) => token(/<#--.*?->/),
+    // comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")),
 
     interpolation: ($) =>
       seq(
@@ -162,23 +163,35 @@ module.exports = grammar({
     */
     // testing interpolation
     string: ($) =>
-  choice(
-    token(/\"(\\.|[^\"])*\"/),  // Regular double-quoted string
-    token(/\'(\\.|[^\'])*\'/),  // Regular single-quoted string
-    $.interpolated_string       // Support for string interpolation
-  ),
+      choice(
+        token(/\"(\\.|[^\"])*\"/),  // Regular double-quoted string
+        token(/\'(\\.|[^\'])*\'/),  // Regular single-quoted string
+        $.interpolated_string       // Support for string interpolation
+      ),
 
-interpolated_string: ($) =>
-  seq(
-    '"',   // Start of string
-    repeat(choice(
-      /[^"${}\\]+/, // Normal string content
-      $.interpolation, // Embedded FreeMarker expressions
-      /\\./, // Escaped characters
-      "$" // Literal dollar signs
-    )),
-    '"',   // End of string
-  ),
+    interpolated_string: ($) =>
+      choice(
+        seq(
+          '"',   // Start of string
+          repeat(choice(
+            /[^"${}\\]+/, // Normal string content
+            $.interpolation, // Embedded FreeMarker expressions
+            /\\./, // Escaped characters
+            "$" // Literal dollar signs
+          )),
+          '"',   // End of string
+        ),
+        seq(
+          "'",   // Start of string
+          repeat(choice(
+            /[^'${}\\]+/, // Normal string content
+            $.interpolation, // Embedded FreeMarker expressions
+            /\\./, // Escaped characters
+            "$" // Literal dollar signs
+          )),
+          "'"   // End of string
+        ),
+      ),
 
     number: ($) => /[0-9]/,
 
@@ -250,17 +263,17 @@ interpolated_string: ($) =>
       prec.left(
         1,
         choice(
-          seq("<@", token(/\w+/), repeat($.parameter_group), choice(">", "/>")),
+          seq("<@", token(/\w+(\.\w+)?/), repeat($.parameter_group), choice(">", "/>")),
           seq(
             "<",
-            token(/\w+/),
+            token(/\w+(\.\w+)?/),
             repeat($.parameter_group),
             choice("/>", seq(">", repeat($._definition), $.closing_tag)),
           ),
         ),
       ),
 
-    closing_tag: ($) => seq("</", token(/\w+/), ">"),
+    closing_tag: ($) => seq("</", token(/\w+(\.\w+)?/), ">"),
 
     /********** END USER DEFINED DIRECTIVES ***********/
 
