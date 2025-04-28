@@ -124,11 +124,6 @@
     "fields": {}
   },
   {
-    "type": "closing_tag",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "default",
     "named": true,
     "fields": {},
@@ -517,21 +512,6 @@
     }
   },
   {
-    "type": "interpolated_string",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "interpolation",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "interpolation",
     "named": true,
     "fields": {},
@@ -742,6 +722,11 @@
     }
   },
   {
+    "type": "open_tag_end",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "operator",
     "named": true,
     "fields": {}
@@ -891,11 +876,15 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
-          "type": "interpolated_string",
+          "type": "interpolation",
+          "named": true
+        },
+        {
+          "type": "string_text",
           "named": true
         }
       ]
@@ -1012,14 +1001,10 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "cdata",
-          "named": true
-        },
-        {
-          "type": "closing_tag",
           "named": true
         },
         {
@@ -1035,11 +1020,37 @@
           "named": true
         },
         {
+          "type": "open_tag_end",
+          "named": true
+        },
+        {
           "type": "parameter_group",
+          "named": true
+        },
+        {
+          "type": "self_closing_tag",
+          "named": true
+        },
+        {
+          "type": "user_defined_end",
+          "named": true
+        },
+        {
+          "type": "user_defined_start",
           "named": true
         }
       ]
     }
+  },
+  {
+    "type": "user_defined_end",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "user_defined_start",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "visit",
@@ -1081,10 +1092,6 @@
     "named": false
   },
   {
-    "type": "'",
-    "named": false
-  },
-  {
     "type": "*",
     "named": false
   },
@@ -1118,10 +1125,6 @@
   },
   {
     "type": "/",
-    "named": false
-  },
-  {
-    "type": "/>",
     "named": false
   },
   {
@@ -1273,6 +1276,10 @@
     "named": false
   },
   {
+    "type": "</@",
+    "named": false
+  },
+  {
     "type": "<=",
     "named": false
   },
@@ -1418,11 +1425,11 @@
   },
   {
     "type": "lt",
-    "named": false
+    "named": true
   },
   {
     "type": "lt",
-    "named": true
+    "named": false
   },
   {
     "type": "lte",
@@ -1481,7 +1488,15 @@
     "named": true
   },
   {
+    "type": "self_closing_tag",
+    "named": true
+  },
+  {
     "type": "stop",
+    "named": true
+  },
+  {
+    "type": "string_text",
     "named": true
   },
   {

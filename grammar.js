@@ -26,18 +26,17 @@ module.exports = grammar({
 
     comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")), // multi-line comments
 
+
     interpolation: ($) =>
-      // seq(
-      //   prec.left(
-          // 1,
-          seq(
-            "$",
-            alias("{", $.bracket),
-            repeat($.expression),
-            alias("}", $.bracket),
-          ),
-      //   ),
-      // ),
+      prec.right(
+        2,
+        seq(
+          "$",
+          alias("{", $.bracket),
+          $.expression,
+          alias("}", $.bracket),
+        ),
+      ),
 
     directive: ($) =>
       choice(
@@ -77,13 +76,14 @@ module.exports = grammar({
 
     expression: ($) =>
       choice(
+        $.interpolation, // interpolation can be a full expression itself!
         prec.right(
           1,
           seq(
             repeat1(prec(2, $.type)),
             optional($.operator),
             optional(repeat1($.type)),
-          ),
+          )
         ),
         prec.left(1, seq($.operator, repeat($.type))),
         $.interpolation
@@ -118,42 +118,23 @@ module.exports = grammar({
 
     operator: ($) =>
       choice(
-        "using",
-        "is",
-        ",",
+        "using", "is", ",",
 
         //SEQUENCE OPERATIONS
-        "..",
-        "..<",
-        "..!",
+        "..", "..<", "..!",
 
         //HASH OPERATIONS
         ":",
 
         //ARITHMETICAL OPERATIONS
-        "*",
-        "+",
-        "/",
-        "-",
-        "%",
+        "*", "+", "/", "-", "%",
 
         //COMPARISON OPERATIONS
-        "==",
-        "!=",
-        "<",
-        "<=",
-        "lt",
-        "lte",
-        "gt",
-        "gte",
-        "eq",
-        "neq",
+        "==", "!=", "<", "<=",
+        "lt", "lte", "gt", "gte", "eq", "neq",
 
         //LOGICAL OPERATIONS
-        "!",
-        "&&",
-        "||",
-        "??",
+        "!", "&&", "||", "??",
 
         //ASSIGNMENT OPERATIONS
         "=",
@@ -161,40 +142,49 @@ module.exports = grammar({
 
     //DIRECT Values
     // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
-    string: ($) =>
-      choice(
-        token(/\"(\\.|[^"])*"/),  // Regular double-quoted string
-        token(/\'(\\.|[^'])*'/),  // Regular single-quoted string
-        $.interpolated_string       // Support for string interpolation
-      ),
+    string: $ => seq(
+      '"',
+      repeat(choice(
+        $.string_text,
+        $.interpolation
+      )),
+      '"'
+    ),
+
+    string_text: _ => token(prec(1, /([^"$]|\$[^({])+/)),
 
     interpolated_string: ($) =>
       choice(
         seq(
-          '"',   // Start of string
-          repeat(choice(
-            /[^"\\${}\\]+/, // Normal string content, allowing HL7 chars
-            $.interpolation, // Embedded FreeMarker expressions
-            /\\./, // Escaped characters
-            "$" // Literal dollar signs
-          )),
-          '"',   // End of string
+          '"',
+          repeat(
+            choice(
+              /[^"\\$]+/,
+              '\\.',
+              $.interpolation,
+              '$'
+            )
+          ),
+          '"'
         ),
         seq(
-          "'",   // Start of string
-          repeat(choice(
-            /[^'\\${}\\]+/, // Normal string content
-            $.interpolation, // Embedded FreeMarker expressions
-            /\\./, // Escaped characters
-            "$" // Literal dollar signs
-          )),
-          "'"   // End of string
-        ),
+          "'",
+          repeat(
+            choice(
+              /[^'\\$]+/,
+              '\\.',
+              $.interpolation,
+              '$'
+            )
+          ),
+          "'"
+        )
       ),
 
-    number: ($) => /[0-9]/,
+    // number: ($) => /[0-9]/,
+    number: ($) => token(/[0-9]+(\.[0-9]+)?/),
 
-    boolean: ($) => seq("true", "false"),
+    boolean: ($) => choice("true", "false"),
 
     sequence: ($) =>
       seq(
@@ -206,29 +196,11 @@ module.exports = grammar({
     hash: ($) =>
       seq(alias("{", $.bracket), repeat($.expression), alias("}", $.bracket)),
 
-    // special_character: $ => token(/[\^~\\|]/),
-
     cdata: ($) => seq(
       "<![CDATA[",
       /[^<]+/,
       "]]>"
     ),
-
-    // cdata: ($) => seq(
-    //   "<![CDATA[",
-    //   choice(
-    //     /[^]]*/,
-    //   ),
-    // "]]>"
-    // ),
-    // cdata_as_xml: ($) => seq(
-    //   "<![CDATA[",
-    //   choice(
-    //     /[^]]*/,
-    //     $.xml,
-    //   ),
-    // "]]>"
-    // ),
 
     xml: ($) => token(prec(1, /<[^>]+>/)),
 
@@ -285,18 +257,24 @@ module.exports = grammar({
 
     /********** USER DEFINED DIRECTIVES ***********/
     user_defined: ($) =>
-      prec.left(
-        1,
-        choice(
-          seq("<@", token(/\w+(\.\w+)?/), repeat($.parameter_group), choice(">", "/>")),
-          seq(
-            "<",
-            token(/\w+(\.\w+)?/) /*$.cdata)*/,
-            repeat($.parameter_group),
-            choice("/>", seq(">", repeat($._definition), $.closing_tag)),
-            // token($.cdata)
-          ),
-        ),
+      prec.left(1, choice(
+        seq($.user_defined_start, repeat($.parameter_group), choice($.self_closing_tag, seq($.open_tag_end, repeat($._definition), $.user_defined_end))),
+      )),
+
+    user_defined_start: ($) =>
+      choice(
+        seq("<@", token(/\w+(\.\w+)?/)),
+        seq("<", token(/\w+(\.\w+)?/))
+      ),
+
+    open_tag_end: ($) => token(">"),
+
+    self_closing_tag: ($) => token("/>"),
+
+    user_defined_end: ($) =>
+      choice(
+        seq("</@", token(/\w+(\.\w+)?/), token(">")),
+        seq("</", token(/\w+(\.\w+)?/), token(">"))
       ),
 
     closing_tag: ($) => seq("</", token(/\w+(\.\w+)?/), ">"),
