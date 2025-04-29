@@ -524,7 +524,7 @@
           "named": true
         },
         {
-          "type": "expression",
+          "type": "identifier",
           "named": true
         }
       ]
@@ -1045,12 +1045,34 @@
   {
     "type": "user_defined_end",
     "named": true,
-    "fields": {}
+    "fields": {
+      "tag_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "user_tag",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "user_defined_start",
     "named": true,
-    "fields": {}
+    "fields": {
+      "tag_name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "user_tag",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "visit",
@@ -1396,6 +1418,10 @@
     "named": false
   },
   {
+    "type": "identifier",
+    "named": true
+  },
+  {
     "type": "incompatible_improvements",
     "named": false
   },
@@ -1514,6 +1540,10 @@
   {
     "type": "url_escaping_charset",
     "named": false
+  },
+  {
+    "type": "user_tag",
+    "named": true
   },
   {
     "type": "using",

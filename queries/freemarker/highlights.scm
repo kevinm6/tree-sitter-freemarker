@@ -30,6 +30,8 @@
 (continue) @keyword
 (sep) @keyword
 (cdata) @string.special
+((user_tag) @tag.builtin
+  (#match? @tag.builtin "^(entry|resource)$"))
 
 ; === Expressions ===
 (expression) @variable
@@ -53,6 +55,10 @@
 
 ; === Interpolations ===
 (interpolation) @variable
+; (interpolation
+;   ["${" "}"] @punctuation.special
+;   (expression) @variable
+; )
 (bracket) @punctuation.bracket
 
 ; === Variables and Built-ins ===

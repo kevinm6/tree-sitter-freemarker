@@ -33,10 +33,18 @@ module.exports = grammar({
         seq(
           "$",
           alias("{", $.bracket),
-          $.expression,
+          repeat1(
+            choice(
+              $.identifier,
+              token(/[?.\[\]]/),
+              token(/[^\s"'{}[\]?=<>/$]+]/), // fallback for names like data, datetime and so on
+            )
+          ),
           alias("}", $.bracket),
-        ),
+        )
       ),
+
+    identifier: () => /[a-zA-Z_]\w*/,
 
     directive: ($) =>
       choice(
@@ -144,10 +152,7 @@ module.exports = grammar({
     // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
     string: $ => seq(
       '"',
-      repeat(choice(
-        $.string_text,
-        $.interpolation
-      )),
+      repeat(choice( $.string_text, $.interpolation)),
       '"'
     ),
 
@@ -258,13 +263,25 @@ module.exports = grammar({
     /********** USER DEFINED DIRECTIVES ***********/
     user_defined: ($) =>
       prec.left(1, choice(
-        seq($.user_defined_start, repeat($.parameter_group), choice($.self_closing_tag, seq($.open_tag_end, repeat($._definition), $.user_defined_end))),
-      )),
+        seq(
+          $.user_defined_start,
+          repeat($.parameter_group),
+          choice(
+            $.self_closing_tag,
+            seq(
+              $.open_tag_end,
+              repeat($._definition),
+              $.user_defined_end
+            )
+          )
+        ),
+      )
+      ),
 
     user_defined_start: ($) =>
       choice(
-        seq("<@", token(/\w+(\.\w+)?/)),
-        seq("<", token(/\w+(\.\w+)?/))
+        seq("<@", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag))),
+        seq("<", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag))),
       ),
 
     open_tag_end: ($) => token(">"),
@@ -273,11 +290,11 @@ module.exports = grammar({
 
     user_defined_end: ($) =>
       choice(
-        seq("</@", token(/\w+(\.\w+)?/), token(">")),
-        seq("</", token(/\w+(\.\w+)?/), token(">"))
+        seq("</@", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), token(">")),
+        seq("</", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), token(">")),
       ),
 
-    closing_tag: ($) => seq("</", token(/\w+(\.\w+)?/), ">"),
+    closing_tag: ($) => seq("</", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), ">"),
 
     /********** END USER DEFINED DIRECTIVES ***********/
 

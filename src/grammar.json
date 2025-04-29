@@ -73,8 +73,30 @@
             "value": "bracket"
           },
           {
-            "type": "SYMBOL",
-            "name": "expression"
+            "type": "REPEAT1",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                },
+                {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "[?.\\[\\]]"
+                  }
+                },
+                {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "[^\\s\"'{}[\\]?=<>/$]+]"
+                  }
+                }
+              ]
+            }
           },
           {
             "type": "ALIAS",
@@ -87,6 +109,10 @@
           }
         ]
       }
+    },
+    "identifier": {
+      "type": "PATTERN",
+      "value": "[a-zA-Z_]\\w*"
     },
     "directive": {
       "type": "CHOICE",
@@ -1038,10 +1064,19 @@
               "value": "<@"
             },
             {
-              "type": "TOKEN",
+              "type": "FIELD",
+              "name": "tag_name",
               "content": {
-                "type": "PATTERN",
-                "value": "\\w+(\\.\\w+)?"
+                "type": "ALIAS",
+                "content": {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\w+(\\.\\w+)?"
+                  }
+                },
+                "named": true,
+                "value": "user_tag"
               }
             }
           ]
@@ -1054,10 +1089,19 @@
               "value": "<"
             },
             {
-              "type": "TOKEN",
+              "type": "FIELD",
+              "name": "tag_name",
               "content": {
-                "type": "PATTERN",
-                "value": "\\w+(\\.\\w+)?"
+                "type": "ALIAS",
+                "content": {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\w+(\\.\\w+)?"
+                  }
+                },
+                "named": true,
+                "value": "user_tag"
               }
             }
           ]
@@ -1089,10 +1133,19 @@
               "value": "</@"
             },
             {
-              "type": "TOKEN",
+              "type": "FIELD",
+              "name": "tag_name",
               "content": {
-                "type": "PATTERN",
-                "value": "\\w+(\\.\\w+)?"
+                "type": "ALIAS",
+                "content": {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\w+(\\.\\w+)?"
+                  }
+                },
+                "named": true,
+                "value": "user_tag"
               }
             },
             {
@@ -1112,10 +1165,19 @@
               "value": "</"
             },
             {
-              "type": "TOKEN",
+              "type": "FIELD",
+              "name": "tag_name",
               "content": {
-                "type": "PATTERN",
-                "value": "\\w+(\\.\\w+)?"
+                "type": "ALIAS",
+                "content": {
+                  "type": "TOKEN",
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "\\w+(\\.\\w+)?"
+                  }
+                },
+                "named": true,
+                "value": "user_tag"
               }
             },
             {
@@ -1137,10 +1199,19 @@
           "value": "</"
         },
         {
-          "type": "TOKEN",
+          "type": "FIELD",
+          "name": "tag_name",
           "content": {
-            "type": "PATTERN",
-            "value": "\\w+(\\.\\w+)?"
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "\\w+(\\.\\w+)?"
+              }
+            },
+            "named": true,
+            "value": "user_tag"
           }
         },
         {
