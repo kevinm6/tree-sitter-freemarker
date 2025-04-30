@@ -54,7 +54,8 @@
 (operator ["*" "+" "-" "/" "%"]) @operator.arithmetic
 
 ; === Interpolations ===
-(interpolation) @variable
+; (interpolation) @contant.character
+(interpolation) @embedded
 ; (interpolation
 ;   ["${" "}"] @punctuation.special
 ;   (expression) @variable

@@ -4,9 +4,6 @@
  * @license MIT
  */
 
-/// <reference types="tree-sitter-cli/dsl" />
-// @ts-check
-
 module.exports = grammar({
   name: "freemarker",
 
@@ -25,26 +22,15 @@ module.exports = grammar({
       ),
 
     comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")), // multi-line comments
-
-
-    interpolation: ($) =>
-      prec.right(
-        2,
-        seq(
-          "$",
-          alias("{", $.bracket),
-          repeat1(
-            choice(
-              $.identifier,
-              token(/[?.\[\]]/),
-              token(/[^\s"'{}[\]?=<>/$]+]/), // fallback for names like data, datetime and so on
-            )
-          ),
-          alias("}", $.bracket),
-        )
+    interpolation: () =>
+      seq(
+        "$",
+        "{",
+        repeat(choice(
+          token(prec(-1, /[^{}]/)), // match anything except nested braces
+        )),
+        "}"
       ),
-
-    identifier: () => /[a-zA-Z_]\w*/,
 
     directive: ($) =>
       choice(
@@ -150,10 +136,17 @@ module.exports = grammar({
 
     //DIRECT Values
     // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
-    string: $ => seq(
-      '"',
-      repeat(choice( $.string_text, $.interpolation)),
-      '"'
+    string: $ => choice(
+      seq(
+        '"',
+        repeat(choice( $.string_text, $.interpolation)),
+        '"'
+      ),
+      seq(
+        "'",
+        repeat(choice( $.string_text, $.interpolation)),
+        "'"
+      ),
     ),
 
     string_text: _ => token(prec(1, /([^"$]|\$[^({])+/)),

@@ -514,21 +514,7 @@
   {
     "type": "interpolation",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "bracket",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        }
-      ]
-    }
+    "fields": {}
   },
   {
     "type": "items",
@@ -1114,6 +1100,10 @@
     "named": false
   },
   {
+    "type": "'",
+    "named": false
+  },
+  {
     "type": "*",
     "named": false
   },
@@ -1418,10 +1408,6 @@
     "named": false
   },
   {
-    "type": "identifier",
-    "named": true
-  },
-  {
     "type": "incompatible_improvements",
     "named": false
   },
@@ -1451,11 +1437,11 @@
   },
   {
     "type": "lt",
-    "named": true
+    "named": false
   },
   {
     "type": "lt",
-    "named": false
+    "named": true
   },
   {
     "type": "lte",
@@ -1558,7 +1544,15 @@
     "named": false
   },
   {
+    "type": "{",
+    "named": false
+  },
+  {
     "type": "||",
+    "named": false
+  },
+  {
+    "type": "}",
     "named": false
   }
 ]
