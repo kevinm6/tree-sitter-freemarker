@@ -82,12 +82,8 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
-        {
-          "type": "group",
-          "named": true
-        },
         {
           "type": "top_level",
           "named": true
@@ -430,7 +426,7 @@
     "fields": {},
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
           "type": "if_else",
@@ -476,6 +472,10 @@
         },
         {
           "type": "elseif",
+          "named": true
+        },
+        {
+          "type": "parameter_group",
           "named": true
         }
       ]
@@ -622,6 +622,10 @@
         },
         {
           "type": "items",
+          "named": true
+        },
+        {
+          "type": "parameter_group",
           "named": true
         },
         {
@@ -858,6 +862,21 @@
     "fields": {}
   },
   {
+    "type": "stop",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "parameter_group",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "string",
     "named": true,
     "fields": {},
@@ -870,7 +889,11 @@
           "named": true
         },
         {
-          "type": "string_text",
+          "type": "string_text_double",
+          "named": true
+        },
+        {
+          "type": "string_text_single",
           "named": true
         }
       ]
@@ -929,6 +952,10 @@
       "types": [
         {
           "type": "group",
+          "named": true
+        },
+        {
+          "type": "identifier",
           "named": true
         },
         {
@@ -1152,10 +1179,6 @@
     "named": false
   },
   {
-    "type": "<#",
-    "named": false
-  },
-  {
     "type": "<#assign",
     "named": false
   },
@@ -1212,6 +1235,10 @@
     "named": false
   },
   {
+    "type": "<#list",
+    "named": false
+  },
+  {
     "type": "<#local",
     "named": false
   },
@@ -1237,6 +1264,14 @@
   },
   {
     "type": "<#setting",
+    "named": false
+  },
+  {
+    "type": "<#stop",
+    "named": false
+  },
+  {
+    "type": "<#stop>",
     "named": false
   },
   {
@@ -1408,6 +1443,10 @@
     "named": false
   },
   {
+    "type": "identifier",
+    "named": true
+  },
+  {
     "type": "incompatible_improvements",
     "named": false
   },
@@ -1417,10 +1456,6 @@
   },
   {
     "type": "lang",
-    "named": false
-  },
-  {
-    "type": "list",
     "named": false
   },
   {
@@ -1437,11 +1472,11 @@
   },
   {
     "type": "lt",
-    "named": false
+    "named": true
   },
   {
     "type": "lt",
-    "named": true
+    "named": false
   },
   {
     "type": "lte",
@@ -1504,11 +1539,11 @@
     "named": true
   },
   {
-    "type": "stop",
+    "type": "string_text_double",
     "named": true
   },
   {
-    "type": "string_text",
+    "type": "string_text_single",
     "named": true
   },
   {

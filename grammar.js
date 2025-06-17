@@ -21,7 +21,17 @@ module.exports = grammar({
         //$.html,
       ),
 
-    comment: ($) => token(seq("<#--", repeat(/[^-]|-[^-]/), "-->")), // multi-line comments
+    comment: ($) => token(seq(
+      "<#--",
+      repeat(choice(
+        /[^-]/,
+        /-[^-]/,
+        /--[^>]/
+      )),
+      "-->")
+      // repeat(/[^-]|-[^-]/),
+    ), // multi-line comments
+
     interpolation: () =>
       seq(
         "$",
@@ -101,7 +111,7 @@ module.exports = grammar({
     //   seq('</', $.top_level, '>'),
     // ),
 
-    built_in: ($) => prec.left(1, seq("?", $.top_level, optional($.group))),
+    built_in: ($) => prec.left(1, seq("?", repeat($.top_level))),
 
     group: ($) =>
       seq(
@@ -139,17 +149,21 @@ module.exports = grammar({
     string: $ => choice(
       seq(
         '"',
-        repeat(choice( $.string_text, $.interpolation)),
+        repeat(choice($.string_text_double, $.interpolation)),
         '"'
       ),
       seq(
         "'",
-        repeat(choice( $.string_text, $.interpolation)),
+        repeat(choice($.string_text_single, $.interpolation)),
         "'"
       ),
     ),
 
-    string_text: _ => token(prec(1, /([^"$]|\$[^({])+/)),
+    // string_text_double: _ => token(prec(1, /([^"$']|\$[^({])+/))),
+    // string_text_single: _ => token(prec(1, /([^'$']|\$[^({])+/))),
+
+    string_text_double: _ => token(prec(1, /[^"\\$]+/)),
+    string_text_single: _ => token(prec(1, /[^'\\$]+/)),
 
     interpolated_string: ($) =>
       choice(
@@ -205,7 +219,7 @@ module.exports = grammar({
     //RETRIEVE Values
     top_level: ($) =>
       choice(
-        token(/\w+/),
+        alias(token(/\w+/), $.identifier),
         prec.left(1, seq(token(/\w+/), $.group)),
         prec.left(
           1,
@@ -295,14 +309,14 @@ module.exports = grammar({
 
     list: ($) =>
       seq(
-        seq(prec.left(1, seq("<#", "list")), repeat($.parameter_group), ">"),
+        seq("<#list", repeat($.parameter_group), ">"),
         repeat($.list_middle),
         optional($.list_else),
         "</#list>",
       ),
 
     list_middle: ($) =>
-      choice($.break, $.continue, $.directive, $.items, $.sep),
+      choice($.break, $.continue, $.directive, $.items, $.sep, $.parameter_group),
 
     items_middle: ($) => choice($.break, $.continue, $.directive, $.sep),
 
@@ -329,7 +343,10 @@ module.exports = grammar({
 
     if: ($) =>
       seq(
-        prec.left(1, seq("<#if", repeat1($.parameter_group), ">")),
+        // prec.left(
+        //   1,
+        seq("<#if", repeat($.parameter_group), ">"),
+        // ),
         repeat($.if_middle),
         optional($.if_else),
         "</#if>",
@@ -340,7 +357,7 @@ module.exports = grammar({
     elseif: ($) =>
       seq(prec.left(1, seq("<#elseif", repeat($.parameter_group), ">"))),
 
-    if_middle: ($) => choice($.elseif, $.directive),
+    if_middle: ($) => choice($.elseif, $.directive, $.parameter_group),
 
     /********** END IF EXPRESSION ***********/
 
@@ -446,7 +463,10 @@ module.exports = grammar({
     setting: ($) =>
       seq(prec.left(1, seq("<#setting", repeat($.parameter_group), ">"))),
 
-    stop: ($) => "<#stop>",
+    stop: ($) => choice(
+      "<#stop>",
+      seq("<#stop", repeat($.parameter_group), ">")
+    ),
 
     t: ($) => "<#t>",
 

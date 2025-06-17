@@ -1,0 +1,32 @@
+<#-- Basic comment -->
+<#assign name = "Kevin">
+Hello ${name}!
+<#if user??>
+ Welcome, ${user}!
+<#else>
+<#assign user = "Guest">
+</#if>
+<#list items as item>
+ ${item}
+<#else>
+ No items found.
+</#list>
+<#escape x as x?html>
+<div>${unsafeVar}</div>
+</#escape>
+<#function greet name>
+ Hello ${name}!
+</#function>
+<#macro sayHi>
+<p>Hi!</p>
+</#macro>
+<#switch var>
+<#case "one">
+   One!
+<#break>
+<#default>
+   Default!
+</#switch>
+<@customTag param="value">
+ Custom body
+</@customTag>
