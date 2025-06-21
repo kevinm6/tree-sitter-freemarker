@@ -6,6 +6,7 @@
 
 module.exports = grammar({
   name: "freemarker",
+  conflicts: ($) => [[$.directive, $.user_defined]],
 
   rules: {
     // The production rules of the context-free grammar
@@ -21,25 +22,20 @@ module.exports = grammar({
         //$.html,
       ),
 
-    comment: ($) => token(seq(
-      "<#--",
-      repeat(choice(
-        /[^-]/,
-        /-[^-]/,
-        /--[^>]/
-      )),
-      "-->")
-      // repeat(/[^-]|-[^-]/),
-    ), // multi-line comments
+    comment: (_) =>
+      token(
+        seq("<#--", repeat(choice(/[^-]/, /-[^-]/, /--[^>]/)), "-->"),
+        // repeat(/[^-]|-[^-]/),
+      ), // multi-line comments
 
-    interpolation: () =>
-      seq(
-        "$",
-        "{",
-        repeat(choice(
-          token(prec(-1, /[^{}]/)), // match anything except nested braces
-        )),
-        "}"
+    interpolation: ($) =>
+      prec.right(1, seq("$", "{", repeat($._interp_chunk), "}")),
+
+    _interp_chunk: ($) =>
+      choice(
+        $.interpolation, // allow nesting
+        token(prec(-1, /[^${}]+/)), // plain text that doesn't include braces or dollar
+        token(prec(-1, /[^{}$]/)), // single character fallback
       ),
 
     directive: ($) =>
@@ -87,10 +83,10 @@ module.exports = grammar({
             repeat1(prec(2, $.type)),
             optional($.operator),
             optional(repeat1($.type)),
-          )
+          ),
         ),
         prec.left(1, seq($.operator, repeat($.type))),
-        $.interpolation
+        $.interpolation,
       ),
 
     type: ($) =>
@@ -105,12 +101,6 @@ module.exports = grammar({
         $.top_level,
       ),
 
-    // html: $ => seq(
-    //   seq(prec.left(1,seq('<', $.top_level)),  optional(repeat($.parameter_group)), '>'),
-    //   repeat($._definition),
-    //   seq('</', $.top_level, '>'),
-    // ),
-
     built_in: ($) => prec.left(1, seq("?", repeat($.top_level))),
 
     group: ($) =>
@@ -120,25 +110,44 @@ module.exports = grammar({
         alias(")", $.bracket),
       ),
 
-    operator: ($) =>
+    operator: (_) =>
       choice(
-        "using", "is", ",",
+        "using",
+        "is",
+        ",",
 
         //SEQUENCE OPERATIONS
-        "..", "..<", "..!",
+        "..",
+        "..<",
+        "..!",
 
         //HASH OPERATIONS
         ":",
 
         //ARITHMETICAL OPERATIONS
-        "*", "+", "/", "-", "%",
+        "*",
+        "+",
+        "/",
+        "-",
+        "%",
 
         //COMPARISON OPERATIONS
-        "==", "!=", "<", "<=",
-        "lt", "lte", "gt", "gte", "eq", "neq",
+        "==",
+        "!=",
+        "<",
+        "<=",
+        "lt",
+        "lte",
+        "gt",
+        "gte",
+        "eq",
+        "neq",
 
         //LOGICAL OPERATIONS
-        "!", "&&", "||", "??",
+        "!",
+        "&&",
+        "||",
+        "??",
 
         //ASSIGNMENT OPERATIONS
         "=",
@@ -146,75 +155,39 @@ module.exports = grammar({
 
     //DIRECT Values
     // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
-    string: $ => choice(
-      seq(
-        '"',
-        repeat(choice($.string_text_double, $.interpolation)),
-        '"'
+    string: ($) =>
+      choice(
+        seq('"', repeat(choice($.string_text_double, $.interpolation)), '"'),
+        seq("'", repeat(choice($.string_text_single, $.interpolation)), "'"),
       ),
-      seq(
-        "'",
-        repeat(choice($.string_text_single, $.interpolation)),
-        "'"
-      ),
-    ),
 
-    // string_text_double: _ => token(prec(1, /([^"$']|\$[^({])+/))),
-    // string_text_single: _ => token(prec(1, /([^'$']|\$[^({])+/))),
-
-    string_text_double: _ => token(prec(1, /[^"\\$]+/)),
-    string_text_single: _ => token(prec(1, /[^'\\$]+/)),
+    string_text_double: (_) => token(prec(1, /[^"\\$]+/)),
+    string_text_single: (_) => token(prec(1, /[^'\\$]+/)),
 
     interpolated_string: ($) =>
       choice(
-        seq(
-          '"',
-          repeat(
-            choice(
-              /[^"\\$]+/,
-              '\\.',
-              $.interpolation,
-              '$'
-            )
-          ),
-          '"'
-        ),
-        seq(
-          "'",
-          repeat(
-            choice(
-              /[^'\\$]+/,
-              '\\.',
-              $.interpolation,
-              '$'
-            )
-          ),
-          "'"
-        )
+        seq('"', repeat(choice(/[^"\\$]+/, "\\.", $.interpolation, "$")), '"'),
+        seq("'", repeat(choice(/[^'\\$]+/, "\\.", $.interpolation, "$")), "'"),
       ),
 
-    // number: ($) => /[0-9]/,
-    number: ($) => token(/[0-9]+(\.[0-9]+)?/),
+    number: (_) => token(/[0-9]+(\.[0-9]+)?/),
 
-    boolean: ($) => choice("true", "false"),
+    boolean: (_) => choice("true", "false"),
 
     sequence: ($) =>
       seq(
         alias("[", $.bracket),
-        repeat(seq($.expression, optional(","))),
+        choice(seq($.expression, repeat(seq(",", $.expression)))),
+        // repeat(seq($.expression, optional(","))),
         alias("]", $.bracket),
       ),
 
     hash: ($) =>
       seq(alias("{", $.bracket), repeat($.expression), alias("}", $.bracket)),
 
-    cdata: ($) => seq(
-      "<![CDATA[",
-      /[^<]+/,
-      "]]>"
-    ),
+    cdata: (_) => seq("<![CDATA[", /[^<]+/, "]]>"),
 
-    xml: ($) => token(prec(1, /<[^>]+>/)),
+    xml: (_) => token(prec(1, /<[^>]+>/)),
 
     //RETRIEVE Values
     top_level: ($) =>
@@ -233,7 +206,7 @@ module.exports = grammar({
 
     spec_var: ($) => seq(prec.left(1, seq(".", $._spec_var_name))),
 
-    _spec_var_name: ($) =>
+    _spec_var_name: (_) =>
       choice(
         "auto_esc",
         "caller_template_name",
@@ -261,29 +234,37 @@ module.exports = grammar({
         "version",
       ),
 
-    //METHOD Call
-    // method: $ => seq(
-    //   $.group
-    // ),
-
-
     /********** USER DEFINED DIRECTIVES ***********/
     user_defined: ($) =>
-      prec.left(1, choice(
-        seq(
-          $.user_defined_start,
-          repeat($.parameter_group),
-          choice(
-            $.self_closing_tag,
-            seq(
-              $.open_tag_end,
-              repeat($._definition),
-              $.user_defined_end
-            )
-          )
+      prec.left(
+        1,
+        choice(
+          seq(
+            $.user_defined_start,
+            repeat($.parameter_group),
+            choice(
+              $.self_closing_tag,
+              seq(
+                $.open_tag_end,
+                repeat(choice($.raw_text, $._definition, $.user_defined)),
+                $.user_defined_end,
+              ),
+            ),
+          ),
+          /*
+          seq(
+            $.user_defined_start,
+            repeat($.parameter_group),
+            choice(
+              $.self_closing_tag,
+              seq($.open_tag_end, repeat($._definition), $.user_defined_end),
+            ),
+          ),
+          */
         ),
-      )
       ),
+
+    raw_text: ($) => alias(/[^<>{}$\n][^<>{}$]*/, $.text),
 
     user_defined_start: ($) =>
       choice(
@@ -291,17 +272,30 @@ module.exports = grammar({
         seq("<", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag))),
       ),
 
-    open_tag_end: ($) => token(">"),
+    open_tag_end: (_) => token(">"),
 
-    self_closing_tag: ($) => token("/>"),
+    self_closing_tag: (_) => token("/>"),
 
     user_defined_end: ($) =>
       choice(
-        seq("</@", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), token(">")),
-        seq("</", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), token(">")),
+        seq(
+          "</@",
+          field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)),
+          token(">"),
+        ),
+        seq(
+          "</",
+          field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)),
+          token(">"),
+        ),
       ),
 
-    closing_tag: ($) => seq("</", field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)), ">"),
+    closing_tag: ($) =>
+      seq(
+        "</",
+        field("tag_name", alias(token(/\w+(\.\w+)?/), $.user_tag)),
+        ">",
+      ),
 
     /********** END USER DEFINED DIRECTIVES ***********/
 
@@ -316,13 +310,20 @@ module.exports = grammar({
       ),
 
     list_middle: ($) =>
-      choice($.break, $.continue, $.directive, $.items, $.sep, $.parameter_group),
+      choice(
+        $.break,
+        $.continue,
+        $.directive,
+        $.items,
+        $.sep,
+        $.parameter_group,
+      ),
 
     items_middle: ($) => choice($.break, $.continue, $.directive, $.sep),
 
-    break: ($) => "<#break>",
+    break: (_) => "<#break>",
 
-    continue: ($) => "<#continue>",
+    continue: (_) => "<#continue>",
 
     list_else: ($) => seq("<#else>", repeat($.list_middle)),
 
@@ -335,7 +336,7 @@ module.exports = grammar({
 
     sep: ($) => choice("<#sep>", $.sep_block),
 
-    sep_block: ($) => seq("<#sep>", "</#sep>"),
+    sep_block: (_) => seq("<#sep>", "</#sep>"),
 
     /********** END LIST EXPRESSION **************/
 
@@ -347,17 +348,21 @@ module.exports = grammar({
         //   1,
         seq("<#if", repeat($.parameter_group), ">"),
         // ),
-        repeat($.if_middle),
+        repeat($._definition),
+        repeat($.elseif),
         optional($.if_else),
         "</#if>",
       ),
 
-    if_else: ($) => seq("<#else>", repeat($.if_middle)),
-
     elseif: ($) =>
-      seq(prec.left(1, seq("<#elseif", repeat($.parameter_group), ">"))),
+      seq("<#elseif", repeat($.parameter_group), ">", repeat($._definition)),
 
-    if_middle: ($) => choice($.elseif, $.directive, $.parameter_group),
+    if_else: ($) => seq("<#else>", repeat($._definition)),
+    // if_else: ($) => seq("<#else>", repeat($.if_middle)),
+    //
+    // elseif: ($) => seq(prec.left(1, seq("<#elseif", repeat($.parameter_group), ">"))),
+
+    if_middle: ($) => choice($.elseif, $._definition, $.parameter_group),
 
     /********** END IF EXPRESSION ***********/
 
@@ -426,15 +431,15 @@ module.exports = grammar({
 
     attempt_middle: ($) => choice($.recover, $.directive),
 
-    recover: ($) => "<#recover>",
+    recover: (_) => "<#recover>",
 
     /*********** END ATTEMPT EXPRESSION  ***********/
 
     /*********** SINGLE EXPRESSIONS  ***********/
 
-    fallback: ($) => "<#fallback>",
+    fallback: (_) => "<#fallback>",
 
-    flush: ($) => "<#flush>",
+    flush: (_) => "<#flush>",
 
     ftl: ($) => seq(prec.left(1, seq("<#ftl", repeat($.parameter_group), ">"))),
 
@@ -451,24 +456,22 @@ module.exports = grammar({
     include: ($) =>
       seq(prec.left(1, seq("<#include", repeat($.parameter_group), ">"))),
 
-    lt: ($) => "<#lt>",
+    lt: (_) => "<#lt>",
 
-    nt: ($) => "<#nt>",
+    nt: (_) => "<#nt>",
 
     recurse: ($) =>
       seq(prec.left(1, seq("<#recurse", repeat($.parameter_group), ">"))),
 
-    rt: ($) => "<#rt>",
+    rt: (_) => "<#rt>",
 
     setting: ($) =>
       seq(prec.left(1, seq("<#setting", repeat($.parameter_group), ">"))),
 
-    stop: ($) => choice(
-      "<#stop>",
-      seq("<#stop", repeat($.parameter_group), ">")
-    ),
+    stop: ($) =>
+      choice("<#stop>", seq("<#stop", repeat($.parameter_group), ">")),
 
-    t: ($) => "<#t>",
+    t: (_) => "<#t>",
 
     visit: ($) =>
       seq(prec.left(1, seq("<#visit", repeat($.parameter_group), ">"))),
@@ -483,7 +486,7 @@ module.exports = grammar({
         $.end_assign,
       ),
 
-    end_assign: ($) => "</#assign>",
+    end_assign: (_) => "</#assign>",
 
     global: ($) =>
       choice(
@@ -491,7 +494,7 @@ module.exports = grammar({
         $.end_global,
       ),
 
-    end_global: ($) => "</#global>",
+    end_global: (_) => "</#global>",
 
     local: ($) =>
       choice(
@@ -499,7 +502,7 @@ module.exports = grammar({
         $.end_local,
       ),
 
-    end_local: ($) => "</#local>",
+    end_local: (_) => "</#local>",
 
     /*********** END BLOCK EXPRESSIONS  ***********/
   },
