@@ -39,6 +39,7 @@
 (boolean) @boolean
 (number) @number
 (string) @string
+(string_escape_sequence) @string.escape
 (sequence) @constant
 (hash) @constant
 
@@ -69,7 +70,7 @@
 (built_in) @function.builtin
 
 ; === Blocks ===
-(end_assign) @keyword
+; (end_assign) @keyword
 (end_global) @keyword
 (end_local) @keyword
 

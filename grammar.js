@@ -6,7 +6,13 @@
 
 module.exports = grammar({
   name: "freemarker",
-  conflicts: ($) => [[$.directive, $.user_defined]],
+  conflicts: ($) => [
+    // [$.assign, $.comment],
+    // [$.assign, $.directive],
+    [$.directive, $.user_defined],
+    // [$.string, $.interpolation],
+    // [$.string, $.string_escape_sequence],
+  ],
 
   rules: {
     // The production rules of the context-free grammar
@@ -157,12 +163,15 @@ module.exports = grammar({
     // string: ($) => choice(token(/\"(\\.|[^\"])*\"/), token(/\'(\\.|[^\'])*\'/)),
     string: ($) =>
       choice(
-        seq('"', repeat(choice($.string_text_double, $.interpolation)), '"'),
-        seq("'", repeat(choice($.string_text_single, $.interpolation)), "'"),
+        seq('"', repeat(choice($.string_text_double, $.string_escape_sequence, $.interpolation)), '"'),
+        seq("'", repeat(choice($.string_text_single, $.string_escape_sequence, $.interpolation)), "'"),
       ),
 
-    string_text_double: (_) => token(prec(1, /[^"\\$]+/)),
-    string_text_single: (_) => token(prec(1, /[^'\\$]+/)),
+    string_text_double: () => token(prec(1, /[^"\\$]+/)),
+    string_text_single: () => token(prec(1, /[^'\\$]+/)),
+    string_escape_sequence: () =>  token(seq("\\", /[nrtbfv"'\\]/)),
+    // string_text_double: (_) => token(prec(1, /[^"\\$]+|\\['"nrt\\]|\\u[a-fA-F0-9]{4})+/)),
+    // string_text_single: (_) => token(prec(1, /[^'\\$]+|\\['"nrt\\]|\\u[a-fA-F0-9]{4})+/)),
 
     interpolated_string: ($) =>
       choice(
@@ -480,13 +489,30 @@ module.exports = grammar({
 
     /*********** BLOCK EXPRESSIONS  ***********/
 
+    // assign: ($) =>
+    //   choice(
+    //     seq("<#assign", repeat($.parameter_group), ">"),
+    //     prec.right(
+    //       1,
+    //       seq(
+    //         "<#assign",
+    //         repeat($.parameter_group),
+    //         ">",
+    //         repeat($._definition),
+    //         "</#assign>"
+    //       ),
+    //     ),
+    //     // prec.left(1, ),
+    //     // $.end_assign,
+    //   ),
+
     assign: ($) =>
       choice(
         prec.left(1, seq("<#assign", repeat($.parameter_group), ">")),
-        $.end_assign,
+        "</#assign>"
       ),
 
-    end_assign: (_) => "</#assign>",
+    // end_assign: (_) => "</#assign>",
 
     global: ($) =>
       choice(
